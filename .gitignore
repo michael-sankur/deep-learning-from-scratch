@@ -13,3 +13,5 @@
 **notebooks/demo/.ipynb_checkpoints
 **.executor/
 **_jobs/
+**__pycache__/
+**data/*
