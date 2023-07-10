@@ -1,0 +1,15 @@
+.env
+*.pyc
+**/*.pyc
+**.cache
+#**.github
+**.ipynb_checkpoints
+**.ipython
+**.jupyter
+**.local
+**demo_output/*
+**logs/*
+**plots/*
+**notebooks/demo/.ipynb_checkpoints
+**.executor/
+**_jobs/
