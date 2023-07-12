@@ -64,13 +64,14 @@ class Layer():
 
     _counter = 0
 
-    def __init__(self, num_neurons, activation_function=None, layer_type: str=None):
+    def __init__(self, num_neurons, activation_function_type=None, layer_type: str=None):
         Layer._counter += 1
         self.layer_num = 0
-        self.layer_type = layer_type
+        self.name = f"L{self._counter:02d}"        
         self.num_neurons = num_neurons
-        self.activation_function = activation_function
-        self.name = f"L{self._counter:02d}"
+        self.activation_function_type = activation_function_type
+        self.activation_function = ActivationFunction(self.activation_function_type)
+        self.layer_type = layer_type        
         print(f"Layer {self.name} initialized | Type: {self.layer_type} | Neurons: {self.num_neurons}")
 
 
@@ -108,16 +109,9 @@ class Layer():
         if self.layer_num == 0:
             self.aa = self.zz
         else:
-            if self.activation_function == "linear":
-                self.aa = curr_layer_zz
-            if self.activation_function == "relu":
-                self.aa = np.maximum(curr_layer_zz, 0)
-            if self.activation_function == "softmax":
-                self.aa = np.exp(curr_layer_zz)/np.sum(np.exp(curr_layer_zz),0)
-            if self.activation_function == "tanh":
-                self.aa = (np.exp(curr_layer_zz) - np.exp(-curr_layer_zz)) / (np.exp(curr_layer_zz) + np.exp(-curr_layer_zz))
-        return self.aa    
-
+            self.aa = self.activation_function._compute_activation(curr_layer_zz)
+        return self.aa
+    
     def _compute_gradients(self, nn: "NeuralNetwork", yy, prev_layer: "Layer"=None, next_layer: "Layer"=None):
 
         m = yy.shape[1]
@@ -132,18 +126,18 @@ class Layer():
         # print(f"Weights shape: {self.weights.shape}")
         
         if self.layer_num >= 1:
-            if self.activation_function == "linear":
-                daLm_dzLm = np.ones(self.zz.shape)
-            elif self.activation_function == "relu":
-                daLm_dzLm = np.zeros((self.aa.shape[0], yy.shape[1]))
-                daLm_dzLm[(self.zz >= 0)] = 1
-                # if self.zz[m,0] < 0: daLm_dzLm = 0
-                # if self.zz[m,0] >= 0: daLm_dzLm = 1
-            elif self.activation_function == "softmax":
-                daLm_dzLm = np.ones(self.zz.shape)
-            elif self.activation_function == "tanh":
-                daLm_dzLm = (2 / (np.exp(self.zz) + np.exp(-self.zz)))**2
-            self.daL_dzL = daLm_dzLm
+            # if self.activation_function == "linear":
+            #     daLm_dzLm = np.ones(self.zz.shape)
+            # elif self.activation_function == "relu":
+            #     daLm_dzLm = np.zeros((self.aa.shape[0], yy.shape[1]))
+            #     daLm_dzLm[(self.zz >= 0)] = 1
+            #     # if self.zz[m,0] < 0: daLm_dzLm = 0
+            #     # if self.zz[m,0] >= 0: daLm_dzLm = 1
+            # elif self.activation_function == "softmax":
+            #     daLm_dzLm = np.ones(self.zz.shape)
+            # elif self.activation_function == "tanh":
+            #     daLm_dzLm = (2 / (np.exp(self.zz) + np.exp(-self.zz)))**2
+            self.daL_dzL = self.activation_function._compute_derivative(self.zz)
 
             #
             if self.layer_num == nn.num_layers - 1:
@@ -194,11 +188,31 @@ class ActivationFunction():
             self.type = type
 
 
-    def _compute_activation(self):
+    def _compute_activation(self, zz):
 
-        pass
+        self.aa = np.zeros(zz.shape)
+        if self.type == "linear":
+            self.aa = zz
+        if self.type == "relu":
+            self.aa = np.maximum(zz, 0)
+        if self.type == "softmax":
+            self.aa = np.exp(zz)/np.sum(np.exp(zz),0)
+        if self.type == "tanh":
+            self.aa = (np.exp(zz) - np.exp(-zz)) / (np.exp(zz) + np.exp(-zz))
+        return self.aa
 
-    def _compute_derivative(self):
+    def _compute_derivative(self, zz):
 
-        pass
+        self.daL_dzL = np.zeros(zz.shape)
+        if self.type == "linear":
+            self.daL_dzL = np.ones(zz.shape)
+        elif self.type == "relu":
+            # daLm_dzLm = np.zeros((self.aa.shape[0], yy.shape[1]))
+            self.daL_dzL = np.zeros(zz.shape)
+            self.daL_dzL[(zz >= 0)] = 1
+        elif self.type == "softmax":
+            self.daL_dzL = np.ones(zz.shape)
+        elif self.type == "tanh":
+            self.daL_dzL = (2 / (np.exp(zz) + np.exp(-zz)))**2
+        return self.daL_dzL
 
