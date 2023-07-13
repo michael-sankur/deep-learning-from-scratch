@@ -28,7 +28,7 @@ def test_NN_set_Layers():
     assert nn.num_layers == len(layer_list)
     assert nn.layer_list[0].weights == None
     assert nn.layer_list[0].biases == None
-    assert nn.layer_list[0].activation_function_type == None
+    assert nn.layer_list[0].activation_function_type == "linear"
     assert nn.layer_list[0].activation_function.type == "linear"
 
     for k1 in range(1,nn.num_layers):
