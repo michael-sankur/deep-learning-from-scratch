@@ -6,6 +6,86 @@ Contrains NeuralNetwork, Layer, and ActivationFunction classes
 
 # imports
 import numpy as np
+import copy as copy
+
+#
+
+def label_to_one_hot(Y, num_cols:int=2):
+    one_hot_Y = np.zeros((Y.shape[0], Y.max()+1))
+    # one_hot_Y = np.zeros((Y.shape[0], num_cols))
+    one_hot_Y[np.arange(0, Y.shape[0]), Y] = 1
+    return one_hot_Y
+
+def one_hot_to_predictions(Y_one_hot):
+    return np.argmax(Y_one_hot, 1).reshape(-1,1)
+
+def prediction_accuracy(Y_pred, Y):
+    # print("Values:", Y.T)
+    # print("Predictions:", Y_pred.T)    
+    return np.sum(Y_pred == Y)/Y.shape[0]
+
+def compute_loss(Y_pred, Y):
+    return np.sum((Y_pred - Y)**2)/Y.size
+
+def train_nn_classification(NN: "NeuralNetwork", X_train, Y_train, alpha, iterations=100, intervals=10, X_test=None, Y_test=None):
+    train_accuracy_list = []
+    test_accuracy_list = []
+    NN_list = []
+    epoch_list = []
+    for k1 in range(iterations+1):
+        NN._compute_output(X_train)
+        NN._train_step(X_train, label_to_one_hot(Y_train[:,0], 10), alpha)
+        Y_pred = one_hot_to_predictions(NN._compute_output(X_train))
+        if k1 == 0 or k1 % intervals == 0:
+            print("")
+            Y_pred_train = one_hot_to_predictions(NN._compute_output(X_train))
+            train_accuracy = prediction_accuracy(Y_pred_train, Y_train)
+            train_accuracy_list.append(train_accuracy)
+            if X_test is not None and Y_test is not None:
+                Y_pred_test = one_hot_to_predictions(NN._compute_output(X_test))
+                test_accuracy = prediction_accuracy(Y_pred_test, Y_test)
+                test_accuracy_list.append(test_accuracy)
+                print(f"Iteration: {k1} | Train accuracy: {train_accuracy:0.4f} | Test accuracy: {test_accuracy:0.4f}")
+            else:
+                print(f"Iteration: {k1} | Train accuracy: {train_accuracy:0.4f}")
+            print(f"Train Targets:     {[x for x in Y_train[0:24,0]]}")
+            print(f"Train Predictions: {[x for x in Y_pred[0:24,0]]}")
+
+            epoch_list.append(k1)
+            NN_list.append(copy.deepcopy(NN))
+
+    return NN_list, train_accuracy_list, test_accuracy_list, epoch_list
+
+
+# Gradient descent
+def train_nn_regression(NN: "NeuralNetwork", X_train, Y_train, alpha, iterations=1000, intervals=100, X_test=None, Y_test=None):
+    print(f"\nStarting training of {NN.name}")
+    NN_list = []
+    train_loss_list = []
+    test_loss_list = []
+    epoch_list = []
+    # iterate through data points
+    for k1 in range(iterations+1):
+        NN._compute_output(X_train) # make prediction for all data points
+        NN._train_step(X_train, Y_train, alpha) # compute gradients and apply gradient descent
+        # Y_pred = NN._compute_output(X) # make prediction after gradient descent step
+        if k1 == 0 or k1 % intervals == 0:
+            Y_pred_train = NN._compute_output(X_train)
+            train_loss = compute_loss(Y_pred_train, Y_train)
+            train_loss_list.append(train_loss)
+            if X_test is not None and Y_test is not None:
+                Y_pred_test = NN._compute_output(X_test)
+                test_loss = compute_loss(Y_pred_test, Y_test)
+                test_loss_list.append(test_loss)
+                print(f"Iteration: {k1} | Train loss: {train_loss:0.6f} | Train loss: {test_loss:0.6f}")
+            else:
+                print(f"Iteration: {k1} | Train loss: {train_loss:0.6f}")
+
+            epoch_list.append(k1)
+            NN_list.append(copy.deepcopy(NN))
+
+    return NN_list, train_loss_list, test_loss_list, epoch_list
+
 
 # NeuralNetwork class
 class NeuralNetwork():
