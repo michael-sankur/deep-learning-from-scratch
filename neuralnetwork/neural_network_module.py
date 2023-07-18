@@ -48,8 +48,8 @@ def train_nn_classification(NN: "NeuralNetwork", X_train, Y_train, alpha, iterat
                 print(f"Iteration: {k1} | Train accuracy: {train_accuracy:0.4f} | Test accuracy: {test_accuracy:0.4f}")
             else:
                 print(f"Iteration: {k1} | Train accuracy: {train_accuracy:0.4f}")
-            print(f"Train Targets:     {[x for x in Y_train[0:24,0]]}")
-            print(f"Train Predictions: {[x for x in Y_pred[0:24,0]]}")
+            # print(f"Train Targets:     {[x for x in Y_train[0:24,0]]}")
+            # print(f"Train Predictions: {[x for x in Y_pred[0:24,0]]}")
 
             epoch_list.append(k1)
             NN_list.append(copy.deepcopy(NN))
