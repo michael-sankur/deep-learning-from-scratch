@@ -13,7 +13,7 @@ import copy as copy
 def label_to_one_hot(Y, num_cols:int=2):
     one_hot_Y = np.zeros((Y.shape[0], Y.max()+1))
     # one_hot_Y = np.zeros((Y.shape[0], num_cols))
-    one_hot_Y[np.arange(0, Y.shape[0]), Y] = 1
+    one_hot_Y[np.arange(0, Y.shape[0]), Y[:,0]] = 1
     return one_hot_Y
 
 def one_hot_to_predictions(Y_one_hot):
@@ -22,7 +22,7 @@ def one_hot_to_predictions(Y_one_hot):
 def prediction_accuracy(Y_pred, Y):
     # print("Values:", Y.T)
     # print("Predictions:", Y_pred.T)    
-    return np.sum(Y_pred == Y)/Y.shape[0]
+    return np.sum(Y_pred == Y)/Y.size
 
 def compute_loss(Y_pred, Y):
     return np.sum((Y_pred - Y)**2)/Y.size
@@ -34,7 +34,7 @@ def train_nn_classification(NN: "NeuralNetwork", X_train, Y_train, alpha, iterat
     epoch_list = []
     for k1 in range(iterations+1):
         NN._compute_output(X_train)
-        NN._train_step(X_train, label_to_one_hot(Y_train[:,0], 10), alpha)
+        NN._train_step(X_train, label_to_one_hot(Y_train), alpha)
         Y_pred = one_hot_to_predictions(NN._compute_output(X_train))
         if k1 == 0 or k1 % intervals == 0:
             print("")
