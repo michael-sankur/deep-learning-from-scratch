@@ -27,7 +27,8 @@ def prediction_accuracy(Y_pred, Y):
 def compute_loss(Y_pred, Y):
     return np.sum((Y_pred - Y)**2)/Y.size
 
-def train_nn_classification(NN: "NeuralNetwork", X_train, Y_train, alpha, iterations=100, intervals=10, X_test=None, Y_test=None):
+def train_nn_classification(NN:"NeuralNetwork", X_train, Y_train, alpha, iterations=100, intervals=10, X_test=None, Y_test=None):
+    print(f"\nStart training {NN.name}")
     train_accuracy_list = []
     test_accuracy_list = []
     NN_list = []
@@ -37,7 +38,6 @@ def train_nn_classification(NN: "NeuralNetwork", X_train, Y_train, alpha, iterat
         NN._train_step(X_train, label_to_one_hot(Y_train), alpha)
         Y_pred = one_hot_to_predictions(NN._compute_output(X_train))
         if k1 == 0 or k1 % intervals == 0:
-            print("")
             Y_pred_train = one_hot_to_predictions(NN._compute_output(X_train))
             train_accuracy = prediction_accuracy(Y_pred_train, Y_train)
             train_accuracy_list.append(train_accuracy)
@@ -53,12 +53,17 @@ def train_nn_classification(NN: "NeuralNetwork", X_train, Y_train, alpha, iterat
 
             epoch_list.append(k1)
             NN_list.append(copy.deepcopy(NN))
+    print("")
+    print("Training Complete")
+    print(f"Train accuracy: {prediction_accuracy(one_hot_to_predictions(NN._compute_output(X_train)), Y_train):0.4f}")
+    if X_test is not None and Y_test is not None:
+        print(f"Test accuracy: {prediction_accuracy(one_hot_to_predictions(NN._compute_output(X_test)), Y_test):0.4f}")
 
     return NN_list, train_accuracy_list, test_accuracy_list, epoch_list
 
 
 # Gradient descent
-def train_nn_regression(NN: "NeuralNetwork", X_train, Y_train, alpha, iterations=1000, intervals=100, X_test=None, Y_test=None):
+def train_nn_regression(NN:"NeuralNetwork", X_train, Y_train, alpha, iterations=1000, intervals=100, X_test=None, Y_test=None):
     print(f"\nStarting training of {NN.name}")
     NN_list = []
     train_loss_list = []
@@ -85,6 +90,25 @@ def train_nn_regression(NN: "NeuralNetwork", X_train, Y_train, alpha, iterations
             NN_list.append(copy.deepcopy(NN))
 
     return NN_list, train_loss_list, test_loss_list, epoch_list
+
+
+# Create and plot confusion matrix
+def confusion_matrix(NN:"NeuralNetwork", X, Y, categories:list=None):
+
+    if not categories:
+        categories = np.arange(Y.min(), Y.max()+1)
+    # print(categories)
+    CM = np.zeros((len(categories),len(categories)))
+    # print(CM.shape)
+    Y_pred = one_hot_to_predictions(NN._compute_output(X))
+    for k1 in categories:
+        idx1 = (Y[:,0] == k1)
+        # print(idx1)
+        for k2 in categories:            
+            idx2 = (Y_pred[idx1,0] == k2)
+            CM[k1,k2] = np.sum(idx2)
+        CM[k1,:] = CM[k1,:]/np.sum(idx1)
+    return CM
 
 
 # NeuralNetwork class
