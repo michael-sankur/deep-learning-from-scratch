@@ -28,7 +28,7 @@ def compute_loss(Y_pred, Y):
     return np.sum((Y_pred - Y)**2)/Y.size
 
 def train_nn_classification(NN:"NeuralNetwork", X_train, Y_train, alpha, iterations=100, intervals=10, X_test=None, Y_test=None):
-    print(f"\nStart training {NN.name}")
+    print(f"\nStarting training {NN.name}")
     train_accuracy_list = []
     test_accuracy_list = []
     NN_list = []
@@ -55,9 +55,9 @@ def train_nn_classification(NN:"NeuralNetwork", X_train, Y_train, alpha, iterati
             NN_list.append(copy.deepcopy(NN))
     print("")
     print("Training Complete")
-    print(f"Train accuracy: {prediction_accuracy(one_hot_to_predictions(NN._compute_output(X_train)), Y_train):0.4f}")
+    print(f"Train accuracy: {train_accuracy:0.4f}")
     if X_test is not None and Y_test is not None:
-        print(f"Test accuracy: {prediction_accuracy(one_hot_to_predictions(NN._compute_output(X_test)), Y_test):0.4f}")
+        print(f"Test accuracy: {test_accuracy:0.4f}")
 
     return NN_list, train_accuracy_list, test_accuracy_list, epoch_list
 
@@ -82,12 +82,18 @@ def train_nn_regression(NN:"NeuralNetwork", X_train, Y_train, alpha, iterations=
                 Y_pred_test = NN._compute_output(X_test)
                 test_loss = compute_loss(Y_pred_test, Y_test)
                 test_loss_list.append(test_loss)
-                print(f"Iteration: {k1} | Train loss: {train_loss:0.6f} | Train loss: {test_loss:0.6f}")
+                print(f"Iteration: {k1} | Train loss: {train_loss:0.6f} | Test loss: {test_loss:0.6f}")
             else:
                 print(f"Iteration: {k1} | Train loss: {train_loss:0.6f}")
 
             epoch_list.append(k1)
             NN_list.append(copy.deepcopy(NN))
+
+    print("")
+    print("Training Complete")
+    print(f"Train loss: {train_loss:0.6f}")
+    if X_test is not None and Y_test is not None:
+        print(f"Test loss: {test_loss:0.6f}")
 
     return NN_list, train_loss_list, test_loss_list, epoch_list
 
